@@ -1,4 +1,4 @@
-from collections import deque
+from collections import deque, defaultdict
 
 
 class Node:
@@ -117,7 +117,175 @@ class Node:
         return root
 
     def zigzag_traversal(self, root):
-        pass
+        """
+        This traversal is similar to level-order traversal.
+        but we need to reverse the array of a level if level is odd.
+        :param root:
+        :return:
+        """
+        queue = deque([root] if root else [])
+        res = []
+        while queue:
+            current_level = []
+            for i in range(len(queue)):
+                # Remove from the queue ( Element that entered first)
+                e = queue.popleft()
+                # Add to current level
+                current_level.append(e.value)
+                # Add children to the queue
+                if e.left:
+                    queue.append(e.left)
+                if e.right:
+                    queue.append(e.right)
+            current_level = reversed(current_level) if len(res) % 2 else current_level
+            res.append(current_level)
+
+        return res
+
+    def boundary_traversal(self, root):
+        """
+        Traverse boundary to BT
+
+        1. LEFT BOUNDARY WITHOUT LEAF.
+        2. LEAVES
+        3. RIGHT BOUNDARY WITHOUT LEAF IN REVERSE ORDER
+        :param root:
+        :return:
+        """
+
+        def is_leaf_node(n):
+            return n.left and n.right
+
+        def left_boundary_traversal(res ,root):
+            """
+            WILL BE CALLED BY ROOT OF THE TREE
+            Returns left boundary of the BT except the leaf.
+            :param res:
+            :param root:
+            :return:
+            """
+            current_node = root.left
+            while current_node:
+                if not is_leaf_node(current_node):
+                    res.append(current_node.value)
+
+                current_node = current_node.left if current_node.left else current_node.right
+
+        def right_boundary_traversal(res ,root):
+            """
+            WILL BE CALLED BY ROOT OF THE TREE
+            Returns right boundary of the BT except the leaf in reverse order.
+            :param res:
+            :param root:
+            :return:
+            """
+            temp = []
+            current_node = root.right
+            while current_node:
+                if not is_leaf_node(current_node):
+                    temp.append(current_node.value)
+
+                current_node = current_node.right if current_node.right else current_node.left
+
+            res.extend(reversed(temp))
+
+        def leaf_traversal(res, root):
+            """
+            Returns the leaf traversal of tree
+            :param res:
+            :param root:
+            :return:
+            """
+            if is_leaf_node(root):
+                res.append(root.value)
+                return
+
+            if root.left:
+                leaf_traversal(res, root.left)
+            if root.right:
+                leaf_traversal(res, root.right)
+
+
+
+        res = []
+        if not is_leaf_node(root):
+            res.append(root.value)
+
+        left_boundary_traversal(res, root)
+        leaf_traversal(res, root)
+        right_boundary_traversal(res, root)
+
+        return res
+
+
+    def vertical_order_traversal(self, root):
+        """
+        Things going to HEAT UP.
+        Some concept and DS but it is easy.
+
+        For every node we will mark its coordinates.
+        Root being at (0,0), X Y (Lets consider down as +)
+        Its left (-1,1)
+        Its right(1,1)
+        ..... and so on.
+        :param root:
+        :return:
+        """
+
+        # and return a 2D list of node values
+
+        # Map to store nodes based on vertical and level information
+        nodes = defaultdict(lambda: defaultdict(lambda: set()))
+        """
+         # why set not list ? because
+        to handle cases where multiple nodes could have the same vertical (x) and level (y) values, 
+        ensuring that each node value appears only once at that position.
+        """
+
+        # Will be like { x_coordinate_1: { y_coordinate_1 : (data1, data2) , y_coordinate_2 : (node.data, )}
+        #                x_coordinate_2: { y_coordinate_1 : (data3, data4) , y_coordinate_2 : (node.data5, )}
+
+        # Queue for BFS traversal, each
+        # element is a pair containing node
+        # and its vertical and level information
+        todo = deque([(root, (0, 0))])
+
+        # BFS traversal
+        while todo:
+            # Retrieve the node and its vertical and level information from the front of the queue
+            # REMOVE
+            temp, (x, y) = todo.popleft()
+
+            # Insert the node value into the corresponding vertical and level in the map
+            # PRINT
+            nodes[x][y].add(temp.value)
+
+            # ADD
+            # Process left child
+            if temp.left:
+                todo.append((temp.left, (x - 1, y + 1)))
+
+            # Process right child
+            if temp.right:
+                todo.append((temp.right, (x + 1, y + 1)))
+
+        # Prepare the final result list by combining values from the map
+        ans = []
+        for x, y_vals in nodes.items():  # x = -1, y_vals = { 1 : (20, 10, 30) }
+            col = []
+            for y, values in y_vals.items():
+                # Insert node values
+                # into the column list
+                col.extend(sorted(values))
+            # Add the column list
+            # to the final result
+            ans.append(col)
+
+        return ans
+
+
+
+
 
 node = Node(10)
 node.insert_node(30)
@@ -137,3 +305,6 @@ node.insert_node(50)
 # print(mirror.level_order_traversal(mirror))
 
 
+# print(node.boundary_traversal(node))
+
+print(node.vertical_order_traversal(node))
