@@ -217,7 +217,6 @@ class Node:
 
         return res
 
-
     def vertical_order_traversal(self, root):
         """
         Things going to HEAT UP.
@@ -283,6 +282,162 @@ class Node:
 
         return ans
 
+    def top_view_of_BT(self, root)-> list :
+        """
+        Given the root of the tree return the top view of the tree
+        first node of each vertical
+        :param root:
+        :return:
+        """
+
+        ans = []
+
+        if not root:
+            return ans
+
+        # Map to store the top view nodes based on their vertical positions
+        mpp = {}
+
+        # Queue for BFS traversal, each element is a pair containing node and its vertical position
+        q = deque([(root, 0)])
+
+        while q:
+            # Retrieve the node and its vertical position from the front of the queue
+            node, line = q.popleft()
+
+            # If the vertical position is not already in the map, add the node's data to the map
+            # Intuition is that if tha line is not in map then for that line we are going to write data for the first time.
+            # which eventually means that it is topmost value in that line as we are doing level order traversal.
+            if line not in mpp:
+                mpp[line] = node.value
+
+            # Process left child
+            if node.left:
+                q.append((node.left, line - 1))
+
+            # Process right child
+            if node.right:
+                q.append((node.right, line + 1))
+
+        # Transfer values from the
+        # map to the result vector
+        for value in sorted(mpp.items()):
+            ans.append(value[1])
+
+        return ans
+
+    def bottom_view_of_BT(self, root)-> list :
+        """
+        Given the root of the tree return the BOTTOM view of the
+        :param root:
+        # last node if each vertical
+        :return:
+        """
+
+        ans = []
+
+        if not root:
+            return ans
+
+        # Map to store the top view nodes based on their vertical positions
+        mpp = {}
+
+        # Queue for BFS traversal, each element is a pair containing node and its vertical position
+        q = deque([(root, 0)])
+
+        while q:
+            # Retrieve the node and its vertical position from the front of the queue
+            node, line = q.popleft()
+
+            # Directly write the node value against its vertical line
+            # Intuition: As its level order BFS. Node at the last of any vertical will be processed at the end.
+            # and Last node will get over-write any nodes on the same vertical above it.
+
+            mpp[line] = node.value
+
+
+            # Process left child
+            if node.left:
+                q.append((node.left, line - 1))
+
+            # Process right child
+            if node.right:
+                q.append((node.right, line + 1))
+
+        # Transfer values from the
+        # map to the result vector
+        for value in sorted(mpp.items()):
+            ans.append(value[1])
+
+        return ans
+
+    def left_right_view_of_BT(self, root):
+
+        def rightsideView(self, root):
+            # Vector to store the result
+            res = []
+
+            # Call the recursive function
+            # to populate the right-side view
+            self.recursionRight(root, 0, res)
+
+            return res
+
+        def leftsideView(self, root):
+            # Vector to store the result
+            res = []
+
+            # Call the recursive function
+            # to populate the left-side view
+            self.recursionLeft(root, 0, res)
+
+            return res
+
+        # Recursive function to traverse the
+        # binary tree and populate the left-side view
+        def recursionLeft(self, root, level, res):
+            # Check if the current node is None
+            if not root:
+                return
+
+            # Check if the size of the result list
+            # is equal to the current level
+            if len(res) == level:
+                # If equal, means so far we have not got any node of this level.
+                # add the value of the current node to the result list  (root being at 0)
+                res.append(root.data)
+
+            # Recursively call the function for the
+            # left child with an increased level
+            self.recursionLeft(root.left, level + 1, res)
+
+            # Recursively call the function for the
+            # right child with an increased level
+            self.recursionLeft(root.right, level + 1, res)
+
+        # Recursive function to traverse the
+        # binary tree and populate the right-side view
+        def recursionRight(self, root, level, res):
+            # Check if the current node is None
+            if not root:
+                return
+
+            # Check if the size of the result list
+            # is equal to the current level
+            if len(res) == level:
+                # If equal, means so far we have not got any node of this level.
+                # add the value of the current node to the result list
+                res.append(root.data)
+
+                # Recursively call the function for the
+                # right child with an increased level
+                self.recursionRight(root.right, level + 1, res)
+
+                # Recursively call the function for the
+                # left child with an increased level
+                self.recursionRight(root.left, level + 1, res)
+
+
 
 
 
@@ -307,4 +462,5 @@ node.insert_node(50)
 
 # print(node.boundary_traversal(node))
 
-print(node.vertical_order_traversal(node))
+print(node.bottom_view_of_BT(node))
+
