@@ -437,6 +437,113 @@ class Node:
                 # left child with an increased level
                 self.recursionRight(root.left, level + 1, res)
 
+    def is_symmetric_binary_tree(self, root) -> bool:
+        """
+        tells whether tree forms a mirror around its root.
+        :param root:
+        :return:
+        """
+        def helper(left, right) -> bool:
+            """
+            Traverse Root Left Right in Left Subtree
+            Traverse Root Right Left in Right Subtree
+            Do both of them simultaneously.
+            :param left:
+            :param right:
+            :return:
+            """
+            if not left or not right:  # if any of them is null
+                return left == right   # see if both are null. (Base case)
+
+            if left.value != right.value:
+                return False
+
+            return helper(left.left, right.right) and helper(left.right, right.left)
+
+
+        return helper(root.left, root.right)
+
+    def root_to_node_path(self, root, target) -> list:
+        """
+        Back-tracking
+        Given a target find its path from root.
+        """
+
+        def get_path(ans, node, target):
+            """
+            Recursive backtracking function
+
+            :param ans:
+            :param node:
+            :param target:
+            :return:
+            """
+            if not node:
+                return False
+
+            ans.append(node.value)
+
+            if node.value == target:  # End the search.
+                return True
+
+            # Did not find target yet?
+            # See left and right.
+            if get_path(ans, node.left, target) or get_path(ans, node.right, target):
+                # Target is present in either of the subtree
+                return True
+
+            else: # Not present in either side.
+                ans.pop()  # FALLBACK !!!
+                return False
+
+
+        ans = []
+        if not root:
+            return ans
+        get_path(ans, root, target)
+
+        return ans
+
+    def lowest_common_ancestor(self, root, a, b):
+        """
+        Given two node value a and b.
+        Find the lowest common ancestor of them
+
+        :param root:
+        :param a:
+        :param b:
+        :return:
+        """
+
+        # Recursive DFS solution.
+        # Approach is like we will traverse left -> right
+
+        # Base case
+        # Reached leaf node or got any of the value, return it.
+        # No need to traverse further as we have got what we were looking for.
+        if not root or root == a or root == b:
+            return root
+
+        # Traverse Left
+        answer_from_left_subtree = self.lowest_common_ancestor(root.left, a, b)
+        # Traverse Right
+        answer_from_right_subtree = self.lowest_common_ancestor(root.right, a, b)
+
+        #  Decide at this node.
+        # We got null from left side means target not found in left subtree, return answer from right side
+        if not answer_from_left_subtree:
+            return answer_from_right_subtree
+        # We got null from right side means target not found in right subtree, return answer from left side
+        elif not answer_from_right_subtree:
+            return answer_from_left_subtree
+        # Both side gave us an answer that means this is our answer
+        else:
+            return root
+
+
+
+
+
 
 
 
@@ -462,5 +569,5 @@ node.insert_node(50)
 
 # print(node.boundary_traversal(node))
 
-print(node.bottom_view_of_BT(node))
+print(node.root_to_node_path(node, 50))
 
