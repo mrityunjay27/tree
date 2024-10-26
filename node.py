@@ -541,6 +541,165 @@ class Node:
             return root
 
 
+    def maximum_width_of_BT(self, root):
+        """
+        Return the maximum width of the BT.
+        :param root:
+        :return:
+        """
+
+        # Width - is the number of nodes between(possibly) any two nodes (both node should exist)
+        # Maximum width will be max width among all the levels of BT. It need not be the width of last level.
+
+        # BFS Traversal as we have to do a level order traversal of the Tree.
+        # We will index all the nodes in the tree and calculate (right - left + 1) at each level
+        # and compare it wil the result variable.
+
+        # But there is catch you cannot start indexing the nodes from 0 or 1 and keep on indexing till number of nodes.
+        # Because, for any node with index i its left child will have index (2*i + 1) and right child will have index
+        # (2*i + 2). So the indexing number will keep on increasing and will result in overflow.
+
+        # So, to overcome this.
+        # For a particular level we will start indexing from beginning only.
+        # From the above level, take the minimum index.
+        # Do minimum_index - 1
+        # And this will be starting index of the current leve.
+
+        # If the root is null, the width is zero
+        if not root:
+            return 0
+
+        # Initialize a variable 'ans' to store the maximum width
+        ans = 0
+
+        # Create a deque to perform level-order traversal,
+        # where each element is a tuple of Node and its position in the level
+        q = deque()
+        # Push the root node and its position (0) into the deque
+        q.append((root, 0))
+
+        # Perform level-order traversal
+        while q:
+            # Get the number of nodes at the current level
+            size = len(q)
+            # Get the position of the front node in the current level
+            mmin = q[0][1]
+
+            # Store the first and last positions of nodes in the current level
+            first, last = None, None
+
+            # Process each node in the current level
+            for i in range(size):
+                # Pop the front of the deque
+                node, cur_idx = q.popleft()
+                # Calculate current position relative to the minimum position in the level
+                cur_idx -= mmin
+
+                # If this is the first node in the level, update the 'first' variable
+                if i == 0:
+                    first = cur_idx
+
+                # If this is the last node in the level, update the 'last' variable
+                if i == size - 1:
+                    last = cur_idx
+
+                # Enqueue the left child of the current node with its position
+                if node.left:
+                    q.append((node.left, cur_idx * 2 + 1))
+
+                # Enqueue the right child of the current node with its position
+                if node.right:
+                    q.append((node.right, cur_idx * 2 + 2))
+
+            # Update the maximum width by calculating the difference between the first and last positions, and adding 1
+            ans = max(ans, last - first + 1)
+
+        # Return the maximum width of the binary tree
+        return ans
+
+
+
+    def nodes_at_a_distance_K(self, root, target, k):
+        """
+        Given the root of a binary tree, the value of a target node target, and an integer k,
+        return an array of the values of all nodes that have a distance k from the target node.
+        :param root:
+        :param target:
+        :param k:
+        :return:
+        """
+
+        # We need to mark parents of all the nodes to traverse upwards in the tree.
+
+        def get_parents_map(root):
+            """
+            Modified level order traversal to return parents map
+            :param root:
+            :return:
+            """
+            queue = deque()
+            queue.append(root)
+            parents_map = {root: None, }
+            while len(queue):
+                for i in range(len(queue)):
+                    # Remove from the queue ( Element that entered first)
+                    e = queue.popleft()
+                    # Add children to the queue
+                    if e.left:
+                        queue.append(e.left)
+                        parents_map[e.left] = e  # Mark parent
+                    if e.right:
+                        queue.append(e.right)
+                        parents_map[e.right] = e  # Mark parent
+
+            return parents_map
+
+        parents_map = get_parents_map(root)
+
+
+        # Now we have our parents map ready.
+        # From the target node we possibly go in three directions. (Up towards parent, left, right)
+
+        # We will move 1 step in every direction in one shot.
+        # When step count will be k, we will stop and return whatever is in queue ds
+        # Also, we have to maintain a data structure for visited nodes
+
+        visited = {}
+        q = deque()
+        current_level = 0
+
+        q.append(target)
+        visited[target] = True
+
+        while q:
+            size = len(q)
+            if current_level == k:
+                break
+            current_level += 1
+            for i in range(size):
+                node = q.popleft()
+
+                # See left
+                if node.left and not visited.get(node.left, None):
+                    q.append(node.left)
+                    visited[node.left] = True
+
+                # See right
+                if node.right and not visited.get(node.right, None):
+                    q.append(node.right)
+                    visited[node.right] = True
+
+                # See up
+                if parents_map[node] and visited.get(parents_map[node], None):
+                    q.append(parents_map[node])
+                    visited[parents_map[node]] = True
+
+
+        for e in q:
+            print(e.value)
+
+
+
 
 
 
@@ -569,5 +728,5 @@ node.insert_node(50)
 
 # print(node.boundary_traversal(node))
 
-print(node.root_to_node_path(node, 50))
+node.nodes_at_a_distance_K(node, 50,1)
 
