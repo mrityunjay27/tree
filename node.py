@@ -74,7 +74,7 @@ class Node:
         res = []
         while len(queue):
             current_level = []
-            for i in range(len(queue)):
+            for i in range(len(queue)):  # This will not change on the fly when we change the content of the q inside loop
                 # Remove from the queue ( Element that entered first)
                 e = queue.popleft()
                 # Add to current level
@@ -125,6 +125,7 @@ class Node:
         """
         queue = deque([root] if root else [])
         res = []
+        level = 0
         while queue:
             current_level = []
             for i in range(len(queue)):
@@ -137,8 +138,10 @@ class Node:
                     queue.append(e.left)
                 if e.right:
                     queue.append(e.right)
-            current_level = reversed(current_level) if len(res) % 2 else current_level
+            if level % 2 == 1:
+                current_level.reverse()
             res.append(current_level)
+            level += 1
 
         return res
 
@@ -154,12 +157,13 @@ class Node:
         """
 
         def is_leaf_node(n):
-            return n.left and n.right
+            return not (n.left and n.right)
 
         def left_boundary_traversal(res ,root):
             """
             WILL BE CALLED BY ROOT OF THE TREE
             Returns left boundary of the BT except the leaf.
+            ITERATIVE APPROACH
             :param res:
             :param root:
             :return:
@@ -223,10 +227,8 @@ class Node:
         Some concept and DS but it is easy.
 
         For every node we will mark its coordinates.
-        Root being at (0,0), X Y (Lets consider down as +)
-        Its left (-1,1)
-        Its right(1,1)
-        ..... and so on.
+        Left will be row + 1, col - 1
+        Right will be row + 1, col + 1
         :param root:
         :return:
         """
@@ -234,15 +236,10 @@ class Node:
         # and return a 2D list of node values
 
         # Map to store nodes based on vertical and level information
-        nodes = defaultdict(lambda: defaultdict(lambda: set()))
-        """
-         # why set not list ? because
-        to handle cases where multiple nodes could have the same vertical (x) and level (y) values, 
-        ensuring that each node value appears only once at that position.
-        """
+        nodes = defaultdict(lambda: defaultdict(lambda: list()))
 
-        # Will be like { x_coordinate_1: { y_coordinate_1 : (data1, data2) , y_coordinate_2 : (node.data, )}
-        #                x_coordinate_2: { y_coordinate_1 : (data3, data4) , y_coordinate_2 : (node.data5, )}
+        # Will be like { col_coordinate_1: { row_coordinate_1 : (data1, data2) , row_coordinate_2 : (node.data, )}
+        #                col_coordinate_2: { row_coordinate_1 : (data3, data4) , row_coordinate_2 : (node.data5, )}
 
         # Queue for BFS traversal, each
         # element is a pair containing node
@@ -253,32 +250,28 @@ class Node:
         while todo:
             # Retrieve the node and its vertical and level information from the front of the queue
             # REMOVE
-            temp, (x, y) = todo.popleft()
+            temp, (r, c) = todo.popleft()
 
             # Insert the node value into the corresponding vertical and level in the map
             # PRINT
-            nodes[x][y].add(temp.value)
+            nodes[c][r].append(temp.value)
 
             # ADD
             # Process left child
             if temp.left:
-                todo.append((temp.left, (x - 1, y + 1)))
+                todo.append((temp.left, (r + 1, c - 1)))
 
             # Process right child
             if temp.right:
-                todo.append((temp.right, (x + 1, y + 1)))
+                todo.append((temp.right, (r + 1, c + 1)))
 
         # Prepare the final result list by combining values from the map
         ans = []
-        for x, y_vals in nodes.items():  # x = -1, y_vals = { 1 : (20, 10, 30) }
-            col = []
-            for y, values in y_vals.items():
-                # Insert node values
-                # into the column list
-                col.extend(sorted(values))
-            # Add the column list
-            # to the final result
-            ans.append(col)
+        for col in sorted(nodes.keys()):
+            col_nodes = []
+            for row in sorted(nodes[col].keys()):
+                col_nodes.extend(sorted(nodes[col][row]))
+            ans.append(col_nodes)
 
         return ans
 
@@ -429,13 +422,13 @@ class Node:
                 # add the value of the current node to the result list
                 res.append(root.data)
 
-                # Recursively call the function for the
-                # right child with an increased level
-                self.recursionRight(root.right, level + 1, res)
+            # Recursively call the function for the
+            # right child with an increased level
+            self.recursionRight(root.right, level + 1, res)
 
-                # Recursively call the function for the
-                # left child with an increased level
-                self.recursionRight(root.left, level + 1, res)
+            # Recursively call the function for the
+            # left child with an increased level
+            self.recursionRight(root.left, level + 1, res)
 
     def is_symmetric_binary_tree(self, root) -> bool:
         """
@@ -662,6 +655,8 @@ class Node:
 
         # We will move 1 step in every direction in one shot.
         # When step count will be k, we will stop and return whatever is in queue ds
+        # Why at this point queue will be answer?
+        # 1. As this is BFS (1 step in every direction), and we would have popped all other nodes while doing BFS process.
         # Also, we have to maintain a data structure for visited nodes
 
         visited = {}
